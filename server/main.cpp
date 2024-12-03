@@ -4,7 +4,7 @@
 #include <arpa/inet.h>
 #include <unistd.h>
 
-#define PORT 1234
+#define PORT 1235
 
 volatile sig_atomic_t wasSigHup = 0;
 
@@ -60,7 +60,6 @@ int main()
     setupSigHupHandler(&origMask);
 
     int client_fd = -1;
-    bool isClient = false;
 
     while (1)
     {
@@ -69,7 +68,7 @@ int main()
         FD_SET(server_fd, &fds);
         int maxFd = server_fd;
 
-        if (client_fd != -1 && isClient)
+        if (client_fd != -1)
         {	
             FD_SET(client_fd, &fds);
             if (client_fd > maxFd)
@@ -101,11 +100,10 @@ int main()
                 perror("accept");
                 exit(EXIT_FAILURE);
             }
-            if (!isClient)
+            if (client_fd == -1)
             {
                 client_fd = connect;
                 puts("New connection!");
-                isClient = true;
             }
             else
             {
@@ -127,7 +125,6 @@ int main()
             {
                 close(client_fd);
                 client_fd = -1;
-                isClient = false;
                 puts("Close connection!");
             }
         }
